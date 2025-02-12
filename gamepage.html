@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    /* CSS styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #d487a5;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    button {
+      margin-top: 50px;
+      padding: 10px 20px;
+      font-size: 26px;
+      background-color: #e06b88;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #f156a4;
+    }
+
+    #gamePage {
+      background: #fabbe2;
+      background-size: cover;
+    }
+
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background-color: #fff;
+      border: 2px solid #000;
+      font-size: 32px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .cell.disabled {
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+            .pixel-text {
+          font-family: 'Press Start 2P', cursive;
+          font-size: 18px;
+          text-align: center;
+          color: white;
+          margin-bottom: 15px; /* Space between text and GIF */
+        }
+
+        .image-container {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+        }
+
+   
+
+      .image-container img {
+        max-width: 400px; /* Adjust as needed */
+        max-height: 400px;
+      }
+
+      .image-container button {
+        position: static; /* Remove absolute positioning */
+      }
+
+  </style>
+</head>
+<body>
+  <!-- Welcome Page -->
+  <div id="welcomePage" class="page active">
+    <div class="image-container">
+      <h1 class="pixel-text">Let's play a game!💖🎀</h1>
+      <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXpkNzIzaHFwNHRhZm5iODE2bWI1eGExaHNlejhqOWhhYTM0MW45ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hXPJ667tFAtCqPBpvx/giphy.gif" alt="Tic Tac Toe Image">
+      <button id="startGame">Start!</button>
+    </div>
+    
+    
+  </div>
+
+  <!-- Game Page -->
+  <div id="gamePage" class="page">
+    <h1>Tic Tac Toe!💖✨</h1>
+    <div id="gameBoard">
+      <div class="cell" data-index="0"></div>
+      <div class="cell" data-index="1"></div>
+      <div class="cell" data-index="2"></div>
+      <div class="cell" data-index="3"></div>
+      <div class="cell" data-index="4"></div>
+      <div class="cell" data-index="5"></div>
+      <div class="cell" data-index="6"></div>
+      <div class="cell" data-index="7"></div>
+      <div class="cell" data-index="8"></div>
+    </div>
+  </div>
+
+  <!-- Results Page -->
+  <div id="resultPage" class="page">
+    <h1 id="resultMessage"></h1>
+    <button id="restartGame">Play Again</button>
+  </div>
+
+  <script>
+    // JavaScript Code
+    const welcomePage = document.getElementById('welcomePage');
+    const gamePage = document.getElementById('gamePage');
+    const resultPage = document.getElementById('resultPage');
+    const startGameButton = document.getElementById('startGame');
+    const restartGameButton = document.getElementById('restartGame');
+    const resultMessage = document.getElementById('resultMessage');
+    const gameBoard = document.getElementById('gameBoard');
+    const cells = document.querySelectorAll('.cell');
+
+    let currentPlayer = 'X';
+    let board = Array(9).fill(null);
+    let gameOver = false;
+
+    const winningCombinations = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    startGameButton.addEventListener('click', () => {
+      welcomePage.classList.remove('active');
+      gamePage.classList.add('active');
+    });
+
+    restartGameButton.addEventListener('click', () => {
+      resultPage.classList.remove('active');
+      gamePage.classList.add('active');
+      resetGame();
+    });
+
+    gameBoard.addEventListener('click', (event) => {
+      if (!event.target.classList.contains('cell') || gameOver) return;
+
+      const index = event.target.getAttribute('data-index');
+      if (board[index]) return;
+
+      board[index] = currentPlayer;
+
+      // Add an image to the cell
+      const img = document.createElement('img');
+      img.src = currentPlayer === 'X' ? 'bow.png' : 'heart.png'; 
+      img.alt = currentPlayer;
+      img.style.width = '80%';
+      img.style.height = '80%';
+      event.target.appendChild(img);
+
+      event.target.classList.add('disabled');
+
+      const winner = checkWinner();
+      if (winner) {
+        if (winner === 'O') {
+          endGame("🎉Congratulations! You just won a date with me ❤️!");
+        } else {
+          endGame("😢Oops! You lost! Don't Worry I'll take you out on 14th February!😊");
+        }
+      } else if (board.every(cell => cell)) {
+        endGame("🤝It's a Draw! Rematch scheduled on 14th February!");
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      }
+    });
+
+    function checkWinner() {
+      for (let combination of winningCombinations) {
+        if (combination.every(index => board[index] === 'X')) {
+          return 'X'; // X Wins
+        }
+        if (combination.every(index => board[index] === 'O')) {
+          return 'O'; // O Wins
+        }
+      }
+      return null; // No winner yet
+    }
+
+    function endGame(message) {
+      gameOver = true;
+      gamePage.classList.remove('active');
+      resultMessage.textContent = message;
+      resultPage.classList.add('active');
+    }
+
+    function resetGame() {
+      currentPlayer = 'X';
+      board = Array(9).fill(null);
+      gameOver = false;
+      cells.forEach(cell => {
+        cell.innerHTML = '';
+        cell.classList.remove('disabled');
+      });
+    }
+  </script>
+</body>
+</html>
